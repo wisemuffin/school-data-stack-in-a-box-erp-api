@@ -1,6 +1,7 @@
 from pydantic import BaseModel
 from datetime import date, datetime
-from typing import Optional
+from typing import Generic, List, Optional, TypeVar
+from pydantic.generics import GenericModel
 
 class GeographyBase(BaseModel):
     city: str
@@ -121,3 +122,12 @@ class ClassEnrolment(ClassEnrolmentBase):
 
     class Config:
         from_attributes = True
+
+
+# Define a generic type variable 
+T = TypeVar('T') 
+
+class PaginatedResponse(GenericModel, Generic[T]): 
+    items: List[T] 
+    total: int 
+    next: Optional[str] = None

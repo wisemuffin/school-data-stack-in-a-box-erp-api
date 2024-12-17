@@ -1,10 +1,10 @@
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from models import Base, Geography as GeographyModel, School as SchoolModel, Student as StudentModel, ScholasticYear as ScholasticYearModel, Class as ClassModel, Attendance as AttendanceModel, Enrolment as EnrolmentModel, Incident as IncidentModel, ClassEnrolment as ClassEnrolmentModel
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from typing import List
-from schemas import Geography, GeographyCreate, School, SchoolCreate, Student, StudentCreate, ScholasticYear, ScholasticYearCreate, Class, ClassCreate, Attendance, AttendanceCreate, Enrolment, EnrolmentCreate, Incident, IncidentCreate, ClassEnrolment, ClassEnrolmentCreate
+from typing import List, Optional
+from schemas import Geography, GeographyCreate, School, SchoolCreate, Student, StudentCreate, ScholasticYear, ScholasticYearCreate, Class, ClassCreate, Attendance, AttendanceCreate, Enrolment, EnrolmentCreate, Incident, IncidentCreate, ClassEnrolment, ClassEnrolmentCreate, PaginatedResponse
 from faker import Faker
 from datetime import date
 import random
@@ -141,9 +141,37 @@ def populate_data():
             db.add(incident)
     db.commit()
 
-@app.get("/geographies/", response_model=List[Geography])
-def read_geographies(db: Session = Depends(get_db)):
-    return db.query(GeographyModel).all()
+@app.get("/geographies/", response_model=PaginatedResponse[Geography])
+def read_geographies(
+    db: Session = Depends(get_db),
+    page: Optional[int] = Query(None, description="Page number (only use one of page or offset)"),
+    limit: int = Query(10, description="Number of geographies to retrieve"),
+    offset: Optional[int] = Query(None, description="Number of geographies to skip (only use one of page or offset)"),
+    sort: Optional[str] = Query(None, description="Field to sort by"),
+    order: Optional[str] = Query(None, description="Sort order (asc or desc)")
+):
+    if offset is not None:
+        current_offset = offset
+    else:
+        current_offset = (page - 1) * limit if page else 0
+
+    query = db.query(GeographyModel)
+
+    # Apply sorting
+    if sort:
+        sort_column = getattr(GeographyModel, sort, None)
+        if sort_column:
+            if order == "desc":
+                sort_column = sort_column.desc()
+            query = query.order_by(sort_column)
+
+    geographies = query.offset(current_offset).limit(limit).all()
+    total = db.query(GeographyModel).count()
+
+    next_offset = current_offset + limit if current_offset + limit < total else None
+    next_url = f"/geographies/?limit={limit}&offset={next_offset}" if next_offset else None
+    
+    return PaginatedResponse[Geography](items=geographies, total=total, next=next_url)
 
 @app.post("/geographies/", response_model=Geography)
 def create_geography(geo: GeographyCreate, db: Session = Depends(get_db)):
@@ -153,9 +181,37 @@ def create_geography(geo: GeographyCreate, db: Session = Depends(get_db)):
     db.refresh(geography)
     return geography
 
-@app.get("/schools/", response_model=List[School])
-def read_schools(db: Session = Depends(get_db)):
-    return db.query(SchoolModel).all()
+@app.get("/schools/", response_model=PaginatedResponse[School])
+def read_schools(
+    db: Session = Depends(get_db),
+    page: Optional[int] = Query(None, description="Page number (only use one of page or offset)"),
+    limit: int = Query(10, description="Number of schools to retrieve"),
+    offset: Optional[int] = Query(None, description="Number of schools to skip (only use one of page or offset)"),
+    sort: Optional[str] = Query(None, description="Field to sort by"),
+    order: Optional[str] = Query(None, description="Sort order (asc or desc)")
+):
+    if offset is not None:
+        current_offset = offset
+    else:
+        current_offset = (page - 1) * limit if page else 0
+
+    query = db.query(SchoolModel)
+
+    # Apply sorting
+    if sort:
+        sort_column = getattr(SchoolModel, sort, None)
+        if sort_column:
+            if order == "desc":
+                sort_column = sort_column.desc()
+            query = query.order_by(sort_column)
+
+    schools = query.offset(current_offset).limit(limit).all()
+    total = db.query(SchoolModel).count()
+
+    next_offset = current_offset + limit if current_offset + limit < total else None
+    next_url = f"/schools/?limit={limit}&offset={next_offset}" if next_offset else None
+    
+    return PaginatedResponse[School](items=schools, total=total, next=next_url)
 
 @app.post("/schools/", response_model=School)
 def create_school(school: SchoolCreate, db: Session = Depends(get_db)):
@@ -165,9 +221,37 @@ def create_school(school: SchoolCreate, db: Session = Depends(get_db)):
     db.refresh(school)
     return school
 
-@app.get("/students/", response_model=List[Student])
-def read_students(db: Session = Depends(get_db)):
-    return db.query(StudentModel).all()
+@app.get("/students/", response_model=PaginatedResponse[Student])
+def read_students(
+    db: Session = Depends(get_db),
+    page: Optional[int] = Query(None, description="Page number (only use one of page or offset)"),
+    limit: int = Query(10, description="Number of students to retrieve"),
+    offset: Optional[int] = Query(None, description="Number of students to skip (only use one of page or offset)"),
+    sort: Optional[str] = Query(None, description="Field to sort by"),
+    order: Optional[str] = Query(None, description="Sort order (asc or desc)")
+):
+    if offset is not None:
+        current_offset = offset
+    else:
+        current_offset = (page - 1) * limit if page else 0
+        
+    query = db.query(StudentModel)
+
+    # Apply sorting
+    if sort:
+        sort_column = getattr(StudentModel, sort, None)
+        if sort_column:
+            if order == "desc":
+                sort_column = sort_column.desc()
+            query = query.order_by(sort_column)
+
+    students = query.offset(current_offset).limit(limit).all()
+    total = db.query(StudentModel).count()
+
+    next_offset = current_offset + limit if current_offset + limit < total else None
+    next_url = f"/students/?limit={limit}&offset={next_offset}" if next_offset else None
+    
+    return PaginatedResponse[Student](items=students, total=total, next=next_url)
 
 @app.post("/students/", response_model=Student)
 def create_student(student: StudentCreate, db: Session = Depends(get_db)):
@@ -177,9 +261,37 @@ def create_student(student: StudentCreate, db: Session = Depends(get_db)):
     db.refresh(student)
     return student
 
-@app.get("/classes/", response_model=List[Class])
-def read_classes(db: Session = Depends(get_db)):
-    return db.query(ClassModel).all()
+@app.get("/classes/", response_model=PaginatedResponse[Class])
+def read_classes(
+    db: Session = Depends(get_db),
+    page: Optional[int] = Query(None, description="Page number (only use one of page or offset)"),
+    limit: int = Query(10, description="Number of classes to retrieve"),
+    offset: Optional[int] = Query(None, description="Number of classes to skip (only use one of page or offset)"),
+    sort: Optional[str] = Query(None, description="Field to sort by"),
+    order: Optional[str] = Query(None, description="Sort order (asc or desc)")
+):
+    if offset is not None:
+        current_offset = offset
+    else:
+        current_offset = (page - 1) * limit if page else 0
+
+    query = db.query(ClassModel)
+
+    # Apply sorting
+    if sort:
+        sort_column = getattr(ClassModel, sort, None)
+        if sort_column:
+            if order == "desc":
+                sort_column = sort_column.desc()
+            query = query.order_by(sort_column)
+
+    classes = query.offset(current_offset).limit(limit).all()
+    total = db.query(ClassModel).count()
+
+    next_offset = current_offset + limit if current_offset + limit < total else None
+    next_url = f"/classes/?limit={limit}&offset={next_offset}" if next_offset else None
+    
+    return PaginatedResponse[Class](items=classes, total=total, next=next_url)
 
 @app.post("/classes/", response_model=Class)
 def create_class(class_: ClassCreate, db: Session = Depends(get_db)):
@@ -189,9 +301,37 @@ def create_class(class_: ClassCreate, db: Session = Depends(get_db)):
     db.refresh(class_)
     return class_
 
-@app.get("/attendances/", response_model=List[Attendance])
-def read_attendances(db: Session = Depends(get_db)):
-    return db.query(AttendanceModel).all()
+@app.get("/attendances/", response_model=PaginatedResponse[Attendance])
+def read_attendances(
+    db: Session = Depends(get_db),
+    page: Optional[int] = Query(None, description="Page number (only use one of page or offset)"),
+    limit: int = Query(10, description="Number of attendances to retrieve"),
+    offset: Optional[int] = Query(None, description="Number of attendances to skip (only use one of page or offset)"),
+    sort: Optional[str] = Query(None, description="Field to sort by"),
+    order: Optional[str] = Query(None, description="Sort order (asc or desc)")
+):
+    if offset is not None:
+        current_offset = offset
+    else:
+        current_offset = (page - 1) * limit if page else 0
+
+    query = db.query(AttendanceModel)
+
+    # Apply sorting
+    if sort:
+        sort_column = getattr(AttendanceModel, sort, None)
+        if sort_column:
+            if order == "desc":
+                sort_column = sort_column.desc()
+            query = query.order_by(sort_column)
+
+    attendances = query.offset(current_offset).limit(limit).all()
+    total = db.query(AttendanceModel).count()
+
+    next_offset = current_offset + limit if current_offset + limit < total else None
+    next_url = f"/attendances/?limit={limit}&offset={next_offset}" if next_offset else None
+    
+    return PaginatedResponse[Attendance](items=attendances, total=total, next=next_url)
 
 @app.post("/attendances/", response_model=Attendance)
 def create_attendance(attendance: AttendanceCreate, db: Session = Depends(get_db)):
@@ -200,6 +340,86 @@ def create_attendance(attendance: AttendanceCreate, db: Session = Depends(get_db
     db.commit()
     db.refresh(attendance)
     return attendance
+
+@app.get("/enrolments/", response_model=PaginatedResponse[Enrolment])
+def read_enrolments(
+    db: Session = Depends(get_db),
+    page: Optional[int] = Query(None, description="Page number (only use one of page or offset)"),
+    limit: int = Query(10, description="Number of enrolments to retrieve"),
+    offset: Optional[int] = Query(None, description="Number of enrolments to skip (only use one of page or offset)"),
+    sort: Optional[str] = Query(None, description="Field to sort by"),
+    order: Optional[str] = Query(None, description="Sort order (asc or desc)")
+):
+    if offset is not None:
+        current_offset = offset
+    else:
+        current_offset = (page - 1) * limit if page else 0
+
+    query = db.query(EnrolmentModel)
+
+    # Apply sorting
+    if sort:
+        sort_column = getattr(EnrolmentModel, sort, None)
+        if sort_column:
+            if order == "desc":
+                sort_column = sort_column.desc()
+            query = query.order_by(sort_column)
+
+    enrolments = query.offset(current_offset).limit(limit).all()
+    total = db.query(EnrolmentModel).count()
+
+    next_offset = current_offset + limit if current_offset + limit < total else None
+    next_url = f"/enrolments/?limit={limit}&offset={next_offset}" if next_offset else None
+    
+    return PaginatedResponse[Enrolment](items=enrolments, total=total, next=next_url)
+
+@app.post("/enrolments/", response_model=Enrolment)
+def create_enrolment(enrolment: EnrolmentCreate, db: Session = Depends(get_db)):
+    enrolment = EnrolmentModel(**enrolment.dict())
+    db.add(enrolment)
+    db.commit()
+    db.refresh(enrolment)
+    return enrolment
+
+@app.get("/incidents/", response_model=PaginatedResponse[Incident])
+def read_incidents(
+    db: Session = Depends(get_db),
+    page: Optional[int] = Query(None, description="Page number (only use one of page or offset)"),
+    limit: int = Query(10, description="Number of incidents to retrieve"),
+    offset: Optional[int] = Query(None, description="Number of incidents to skip (only use one of page or offset)"),
+    sort: Optional[str] = Query(None, description="Field to sort by"),
+    order: Optional[str] = Query(None, description="Sort order (asc or desc)")
+):
+    if offset is not None:
+        current_offset = offset
+    else:
+        current_offset = (page - 1) * limit if page else 0
+
+    query = db.query(IncidentModel)
+
+    # Apply sorting
+    if sort:
+        sort_column = getattr(IncidentModel, sort, None)
+        if sort_column:
+            if order == "desc":
+                sort_column = sort_column.desc()
+            query = query.order_by(sort_column)
+
+    incidents = query.offset(current_offset).limit(limit).all()
+    total = db.query(IncidentModel).count()
+
+    next_offset = current_offset + limit if current_offset + limit < total else None
+    next_url = f"/incidents/?limit={limit}&offset={next_offset}" if next_offset else None
+    
+    return PaginatedResponse[Incident](items=incidents, total=total, next=next_url)
+
+@app.post("/incidents/", response_model=Incident)
+def create_incident(incident: IncidentCreate, db: Session = Depends(get_db)):
+    incident = IncidentModel(**incident.dict())
+    db.add(incident)
+    db.commit()
+    db.refresh(incident)
+    return incident
 
 @app.post("/reset/")
 def reset_state():
