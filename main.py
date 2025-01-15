@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Depends, HTTPException, Query
+from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from models import Base, Geography as GeographyModel, School as SchoolModel, Student as StudentModel, ScholasticYear as ScholasticYearModel, Class as ClassModel, Attendance as AttendanceModel, Enrolment as EnrolmentModel, Incident as IncidentModel, ClassEnrolment as ClassEnrolmentModel
 from sqlalchemy import create_engine
@@ -16,6 +17,15 @@ SessionLocal = sessionmaker(bind=engine)
 
 # FastAPI application
 app = FastAPI()
+
+# Allow all origins for simplicity, you can restrict this to specific origins if needed
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # List of allowed origins
+    allow_credentials=True,
+    allow_methods=["*"],  # List of allowed methods
+    allow_headers=["*"],  # List of allowed headers
+)
 
 # Dependency to get the session
 def get_db():
@@ -220,6 +230,18 @@ def create_school(school: SchoolCreate, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(school)
     return school
+
+@app.delete("/schools/{school_id}", response_model=School)
+def delete_school(school_id: int, db: Session = Depends(get_db)):
+    school = db.query(SchoolModel).filter(SchoolModel.id == school_id).first()
+    
+    if not school:
+        raise HTTPException(status_code=404, detail="School not found")
+    
+    db.delete(school)
+    db.commit()
+    return school
+
 
 @app.get("/students/", response_model=PaginatedResponse[Student])
 def read_students(
