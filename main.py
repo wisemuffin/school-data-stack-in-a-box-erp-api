@@ -191,6 +191,17 @@ def create_geography(geo: GeographyCreate, db: Session = Depends(get_db)):
     db.refresh(geography)
     return geography
 
+@app.delete("/geographies/{geography_id}", response_model=Geography)
+def delete_geography(geography_id: int, db: Session = Depends(get_db)):
+    geography = db.query(GeographyModel).filter(GeographyModel.id == geography_id).first()
+    
+    if not geography:
+        raise HTTPException(status_code=404, detail="Geography not found")
+    
+    db.delete(geography)
+    db.commit()
+    return geography
+
 @app.get("/schools/", response_model=PaginatedResponse[School])
 def read_schools(
     db: Session = Depends(get_db),
@@ -283,6 +294,17 @@ def create_student(student: StudentCreate, db: Session = Depends(get_db)):
     db.refresh(student)
     return student
 
+@app.delete("/students/{student_id}", response_model=Student)
+def delete_student(student_id: int, db: Session = Depends(get_db)):
+    student = db.query(StudentModel).filter(StudentModel.id == student_id).first()
+    
+    if not student:
+        raise HTTPException(status_code=404, detail="Student not found")
+    
+    db.delete(student)
+    db.commit()
+    return student
+
 @app.get("/classes/", response_model=PaginatedResponse[Class])
 def read_classes(
     db: Session = Depends(get_db),
@@ -321,6 +343,17 @@ def create_class(class_: ClassCreate, db: Session = Depends(get_db)):
     db.add(class_)
     db.commit()
     db.refresh(class_)
+    return class_
+
+@app.delete("/classes/{class_id}", response_model=Class)
+def delete_class(class_id: int, db: Session = Depends(get_db)):
+    class_ = db.query(ClassModel).filter(ClassModel.id == class_id).first()
+    
+    if not class_:
+        raise HTTPException(status_code=404, detail="Class not found")
+    
+    db.delete(class_)
+    db.commit()
     return class_
 
 @app.get("/attendances/", response_model=PaginatedResponse[Attendance])
@@ -363,6 +396,17 @@ def create_attendance(attendance: AttendanceCreate, db: Session = Depends(get_db
     db.refresh(attendance)
     return attendance
 
+@app.delete("/attendances/{attendance_id}", response_model=Attendance)
+def delete_attendance(attendance_id: int, db: Session = Depends(get_db)):
+    attendance = db.query(AttendanceModel).filter(AttendanceModel.id == attendance_id).first()
+    
+    if not attendance:
+        raise HTTPException(status_code=404, detail="Attendance not found")
+    
+    db.delete(attendance)
+    db.commit()
+    return attendance
+
 @app.get("/enrolments/", response_model=PaginatedResponse[Enrolment])
 def read_enrolments(
     db: Session = Depends(get_db),
@@ -403,6 +447,17 @@ def create_enrolment(enrolment: EnrolmentCreate, db: Session = Depends(get_db)):
     db.refresh(enrolment)
     return enrolment
 
+@app.delete("/enrolments/{enrolment_id}", response_model=Enrolment)
+def delete_enrolment(enrolment_id: int, db: Session = Depends(get_db)):
+    enrolment = db.query(EnrolmentModel).filter(EnrolmentModel.id == enrolment_id).first()
+    
+    if not enrolment:
+        raise HTTPException(status_code=404, detail="Enrolment not found")
+    
+    db.delete(enrolment)
+    db.commit()
+    return enrolment
+
 @app.get("/incidents/", response_model=PaginatedResponse[Incident])
 def read_incidents(
     db: Session = Depends(get_db),
@@ -441,6 +496,17 @@ def create_incident(incident: IncidentCreate, db: Session = Depends(get_db)):
     db.add(incident)
     db.commit()
     db.refresh(incident)
+    return incident
+
+@app.delete("/incidents/{incident_id}", response_model=Incident)
+def delete_incident(incident_id: int, db: Session = Depends(get_db)):
+    incident = db.query(IncidentModel).filter(IncidentModel.id == incident_id).first()
+    
+    if not incident:
+        raise HTTPException(status_code=404, detail="Incident not found")
+    
+    db.delete(incident)
+    db.commit()
     return incident
 
 @app.post("/reset/")
