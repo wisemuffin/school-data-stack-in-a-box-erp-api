@@ -96,6 +96,19 @@ def get_geography_by_id(geography_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Geography not found")
     return geography
 
+@app.put("/geographies/{geography_id}", response_model=Geography)
+def update_geography(geography_id: int, geography: GeographyCreate, db: Session = Depends(get_db)):
+    db_geography = db.query(GeographyModel).filter(GeographyModel.id == geography_id).first()
+    if not db_geography:
+        raise HTTPException(status_code=404, detail="Geography not found")
+    
+    for key, value in geography.dict().items():
+        setattr(db_geography, key, value)
+    
+    db.commit()
+    db.refresh(db_geography)
+    return db_geography
+
 @app.get("/schools/", response_model=PaginatedResponse[School])
 def read_schools(
     db: Session = Depends(get_db),
@@ -153,6 +166,19 @@ def get_school_by_id(school_id: int, db: Session = Depends(get_db)):
     if not school:
         raise HTTPException(status_code=404, detail="School not found")
     return school
+
+@app.put("/schools/{school_id}", response_model=School)
+def update_school(school_id: int, school: SchoolCreate, db: Session = Depends(get_db)):
+    db_school = db.query(SchoolModel).filter(SchoolModel.id == school_id).first()
+    if not db_school:
+        raise HTTPException(status_code=404, detail="School not found")
+    
+    for key, value in school.dict().items():
+        setattr(db_school, key, value)
+    
+    db.commit()
+    db.refresh(db_school)
+    return db_school
 
 @app.get("/students/", response_model=PaginatedResponse[Student])
 def read_students(
@@ -212,6 +238,19 @@ def get_student_by_id(student_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Student not found")
     return student
 
+@app.put("/students/{student_id}", response_model=Student)
+def update_student(student_id: int, student: StudentCreate, db: Session = Depends(get_db)):
+    db_student = db.query(StudentModel).filter(StudentModel.id == student_id).first()
+    if not db_student:
+        raise HTTPException(status_code=404, detail="Student not found")
+    
+    for key, value in student.dict().items():
+        setattr(db_student, key, value)
+    
+    db.commit()
+    db.refresh(db_student)
+    return db_student
+
 @app.get("/classes/", response_model=PaginatedResponse[Class])
 def read_classes(
     db: Session = Depends(get_db),
@@ -269,6 +308,19 @@ def get_class_by_id(class_id: int, db: Session = Depends(get_db)):
     if not class_:
         raise HTTPException(status_code=404, detail="Class not found")
     return class_
+
+@app.put("/classes/{class_id}", response_model=Class)
+def update_class(class_id: int, class_: ClassCreate, db: Session = Depends(get_db)):
+    db_class = db.query(ClassModel).filter(ClassModel.id == class_id).first()
+    if not db_class:
+        raise HTTPException(status_code=404, detail="Class not found")
+    
+    for key, value in class_.dict().items():
+        setattr(db_class, key, value)
+    
+    db.commit()
+    db.refresh(db_class)
+    return db_class
 
 @app.get("/attendances/", response_model=PaginatedResponse[Attendance])
 def read_attendances(
@@ -328,6 +380,19 @@ def get_attendance_by_id(attendance_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Attendance not found")
     return attendance
 
+@app.put("/attendances/{attendance_id}", response_model=Attendance)
+def update_attendance(attendance_id: int, attendance: AttendanceCreate, db: Session = Depends(get_db)):
+    db_attendance = db.query(AttendanceModel).filter(AttendanceModel.id == attendance_id).first()
+    if not db_attendance:
+        raise HTTPException(status_code=404, detail="Attendance not found")
+    
+    for key, value in attendance.dict().items():
+        setattr(db_attendance, key, value)
+    
+    db.commit()
+    db.refresh(db_attendance)
+    return db_attendance
+
 @app.get("/enrolments/", response_model=PaginatedResponse[Enrolment])
 def read_enrolments(
     db: Session = Depends(get_db),
@@ -386,6 +451,19 @@ def get_enrolment_by_id(enrolment_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Enrolment not found")
     return enrolment
 
+@app.put("/enrolments/{enrolment_id}", response_model=Enrolment)
+def update_enrolment(enrolment_id: int, enrolment: EnrolmentCreate, db: Session = Depends(get_db)):
+    db_enrolment = db.query(EnrolmentModel).filter(EnrolmentModel.id == enrolment_id).first()
+    if not db_enrolment:
+        raise HTTPException(status_code=404, detail="Enrolment not found")
+    
+    for key, value in enrolment.dict().items():
+        setattr(db_enrolment, key, value)
+    
+    db.commit()
+    db.refresh(db_enrolment)
+    return db_enrolment
+
 @app.get("/incidents/", response_model=PaginatedResponse[Incident])
 def read_incidents(
     db: Session = Depends(get_db),
@@ -443,6 +521,19 @@ def get_incident_by_id(incident_id: int, db: Session = Depends(get_db)):
     if not incident:
         raise HTTPException(status_code=404, detail="Incident not found")
     return incident
+
+@app.put("/incidents/{incident_id}", response_model=Incident)
+def update_incident(incident_id: int, incident: IncidentCreate, db: Session = Depends(get_db)):
+    db_incident = db.query(IncidentModel).filter(IncidentModel.id == incident_id).first()
+    if not db_incident:
+        raise HTTPException(status_code=404, detail="Incident not found")
+    
+    for key, value in incident.dict().items():
+        setattr(db_incident, key, value)
+    
+    db.commit()
+    db.refresh(db_incident)
+    return db_incident
 
 @app.post("/reset/")
 def reset_state():
