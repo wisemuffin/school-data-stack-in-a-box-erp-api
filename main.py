@@ -5,6 +5,7 @@ from models import Base, Geography as GeographyModel, School as SchoolModel, Stu
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from typing import List, Optional
+from datetime import datetime, timezone, timedelta
 from schemas import Geography, GeographyCreate, School, SchoolCreate, Student, StudentCreate, ScholasticYear, ScholasticYearCreate, Class, ClassCreate, Attendance, AttendanceCreate, Enrolment, EnrolmentCreate, Incident, IncidentCreate, ClassEnrolment, ClassEnrolmentCreate, PaginatedResponse
 from data_generation import populate_data  # Import the data generation function
 
@@ -40,6 +41,13 @@ def startup_event():
     db = SessionLocal()
     populate_data(db)  # Call the data generation function
 
+# Add this helper function near the top of the file
+def get_example_datetimes():
+    now = datetime.now(timezone.utc)
+    one_day_ago = (now - timedelta(days=1)).strftime("%Y-%m-%dT%H:%M:%SZ")
+    one_week_ago = (now - timedelta(days=7)).strftime("%Y-%m-%dT%H:%M:%SZ")
+    return one_day_ago, one_week_ago
+
 @app.get("/geographies/", response_model=PaginatedResponse[Geography])
 def read_geographies(
     db: Session = Depends(get_db),
@@ -47,7 +55,23 @@ def read_geographies(
     limit: int = Query(10, description="Number of geographies to retrieve"),
     offset: Optional[int] = Query(None, description="Number of geographies to skip (only use one of page or offset)"),
     sort: Optional[str] = Query(None, description="Field to sort by"),
-    order: Optional[str] = Query(None, description="Sort order (asc or desc)")
+    order: Optional[str] = Query(None, description="Sort order (asc or desc)"),
+    updated_after: Optional[datetime] = Query(
+        None, 
+        description="Filter items updated after this datetime (format: YYYY-MM-DDTHH:MM:SSZ)",
+        openapi_examples={
+            "one_day_ago": {
+                "summary": "One day ago",
+                "description": "Filter items updated after one day ago",
+                "value": get_example_datetimes()[0]
+            },
+            "one_week_ago": {
+                "summary": "One week ago",
+                "description": "Filter items updated after one week ago",
+                "value": get_example_datetimes()[1]
+            }
+        }
+    )
 ):
     if offset is not None:
         current_offset = offset
@@ -56,6 +80,9 @@ def read_geographies(
 
     query = db.query(GeographyModel)
 
+    # Apply timestamp filters
+    if updated_after:
+        query = query.filter(GeographyModel.updated_at > updated_after)
     # Apply sorting
     if sort:
         sort_column = getattr(GeographyModel, sort, None)
@@ -65,7 +92,7 @@ def read_geographies(
             query = query.order_by(sort_column)
 
     geographies = query.offset(current_offset).limit(limit).all()
-    total = db.query(GeographyModel).count()
+    total = query.count()
 
     next_offset = current_offset + limit if current_offset + limit < total else None
     next_url = f"/geographies/?limit={limit}&offset={next_offset}" if next_offset else None
@@ -118,7 +145,23 @@ def read_schools(
     limit: int = Query(10, description="Number of schools to retrieve"),
     offset: Optional[int] = Query(None, description="Number of schools to skip (only use one of page or offset)"),
     sort: Optional[str] = Query(None, description="Field to sort by"),
-    order: Optional[str] = Query(None, description="Sort order (asc or desc)")
+    order: Optional[str] = Query(None, description="Sort order (asc or desc)"),
+    updated_after: Optional[datetime] = Query(
+        None, 
+        description="Filter items updated after this datetime (format: YYYY-MM-DDTHH:MM:SSZ)",
+        openapi_examples={
+            "one_day_ago": {
+                "summary": "One day ago",
+                "description": "Filter items updated after one day ago",
+                "value": get_example_datetimes()[0]
+            },
+            "one_week_ago": {
+                "summary": "One week ago",
+                "description": "Filter items updated after one week ago",
+                "value": get_example_datetimes()[1]
+            }
+        }
+    )
 ):
     if offset is not None:
         current_offset = offset
@@ -126,6 +169,9 @@ def read_schools(
         current_offset = (page - 1) * limit if page else 0
 
     query = db.query(SchoolModel)
+
+    if updated_after:
+        query = query.filter(SchoolModel.updated_at > updated_after)
 
     # Apply sorting
     if sort:
@@ -189,7 +235,23 @@ def read_students(
     limit: int = Query(10, description="Number of students to retrieve"),
     offset: Optional[int] = Query(None, description="Number of students to skip (only use one of page or offset)"),
     sort: Optional[str] = Query(None, description="Field to sort by"),
-    order: Optional[str] = Query(None, description="Sort order (asc or desc)")
+    order: Optional[str] = Query(None, description="Sort order (asc or desc)"),
+    updated_after: Optional[datetime] = Query(
+        None, 
+        description="Filter items updated after this datetime (format: YYYY-MM-DDTHH:MM:SSZ)",
+        openapi_examples={
+            "one_day_ago": {
+                "summary": "One day ago",
+                "description": "Filter items updated after one day ago",
+                "value": get_example_datetimes()[0]
+            },
+            "one_week_ago": {
+                "summary": "One week ago",
+                "description": "Filter items updated after one week ago",
+                "value": get_example_datetimes()[1]
+            }
+        }
+    )
 ):
     if offset is not None:
         current_offset = offset
@@ -197,6 +259,9 @@ def read_students(
         current_offset = (page - 1) * limit if page else 0
         
     query = db.query(StudentModel)
+
+    if updated_after:
+        query = query.filter(StudentModel.updated_at > updated_after)
 
     # Apply sorting
     if sort:
@@ -260,7 +325,23 @@ def read_classes(
     limit: int = Query(10, description="Number of classes to retrieve"),
     offset: Optional[int] = Query(None, description="Number of classes to skip (only use one of page or offset)"),
     sort: Optional[str] = Query(None, description="Field to sort by"),
-    order: Optional[str] = Query(None, description="Sort order (asc or desc)")
+    order: Optional[str] = Query(None, description="Sort order (asc or desc)"),
+    updated_after: Optional[datetime] = Query(
+        None, 
+        description="Filter items updated after this datetime (format: YYYY-MM-DDTHH:MM:SSZ)",
+        openapi_examples={
+            "one_day_ago": {
+                "summary": "One day ago",
+                "description": "Filter items updated after one day ago",
+                "value": get_example_datetimes()[0]
+            },
+            "one_week_ago": {
+                "summary": "One week ago",
+                "description": "Filter items updated after one week ago",
+                "value": get_example_datetimes()[1]
+            }
+        }
+    )
 ):
     if offset is not None:
         current_offset = offset
@@ -268,6 +349,9 @@ def read_classes(
         current_offset = (page - 1) * limit if page else 0
 
     query = db.query(ClassModel)
+
+    if updated_after:
+        query = query.filter(ClassModel.updated_at > updated_after)
 
     # Apply sorting
     if sort:
@@ -331,7 +415,23 @@ def read_attendances(
     limit: int = Query(10, description="Number of attendances to retrieve"),
     offset: Optional[int] = Query(None, description="Number of attendances to skip (only use one of page or offset)"),
     sort: Optional[str] = Query(None, description="Field to sort by"),
-    order: Optional[str] = Query(None, description="Sort order (asc or desc)")
+    order: Optional[str] = Query(None, description="Sort order (asc or desc)"),
+    updated_after: Optional[datetime] = Query(
+        None, 
+        description="Filter items updated after this datetime (format: YYYY-MM-DDTHH:MM:SSZ)",
+        openapi_examples={
+            "one_day_ago": {
+                "summary": "One day ago",
+                "description": "Filter items updated after one day ago",
+                "value": get_example_datetimes()[0]
+            },
+            "one_week_ago": {
+                "summary": "One week ago",
+                "description": "Filter items updated after one week ago",
+                "value": get_example_datetimes()[1]
+            }
+        }
+    )
 ):
     if offset is not None:
         current_offset = offset
@@ -339,6 +439,9 @@ def read_attendances(
         current_offset = (page - 1) * limit if page else 0
 
     query = db.query(AttendanceModel)
+
+    if updated_after:
+        query = query.filter(AttendanceModel.updated_at > updated_after)
 
     # Apply sorting
     if sort:
@@ -402,7 +505,23 @@ def read_enrolments(
     limit: int = Query(10, description="Number of enrolments to retrieve"),
     offset: Optional[int] = Query(None, description="Number of enrolments to skip (only use one of page or offset)"),
     sort: Optional[str] = Query(None, description="Field to sort by"),
-    order: Optional[str] = Query(None, description="Sort order (asc or desc)")
+    order: Optional[str] = Query(None, description="Sort order (asc or desc)"),
+    updated_after: Optional[datetime] = Query(
+        None, 
+        description="Filter items updated after this datetime (format: YYYY-MM-DDTHH:MM:SSZ)",
+        openapi_examples={
+            "one_day_ago": {
+                "summary": "One day ago",
+                "description": "Filter items updated after one day ago",
+                "value": get_example_datetimes()[0]
+            },
+            "one_week_ago": {
+                "summary": "One week ago",
+                "description": "Filter items updated after one week ago",
+                "value": get_example_datetimes()[1]
+            }
+        }
+    )
 ):
     if offset is not None:
         current_offset = offset
@@ -410,6 +529,9 @@ def read_enrolments(
         current_offset = (page - 1) * limit if page else 0
 
     query = db.query(EnrolmentModel)
+
+    if updated_after:
+        query = query.filter(EnrolmentModel.updated_at > updated_after)
 
     # Apply sorting
     if sort:
@@ -473,7 +595,23 @@ def read_incidents(
     limit: int = Query(10, description="Number of incidents to retrieve"),
     offset: Optional[int] = Query(None, description="Number of incidents to skip (only use one of page or offset)"),
     sort: Optional[str] = Query(None, description="Field to sort by"),
-    order: Optional[str] = Query(None, description="Sort order (asc or desc)")
+    order: Optional[str] = Query(None, description="Sort order (asc or desc)"),
+    updated_after: Optional[datetime] = Query(
+        None, 
+        description="Filter items updated after this datetime (format: YYYY-MM-DDTHH:MM:SSZ)",
+        openapi_examples={
+            "one_day_ago": {
+                "summary": "One day ago",
+                "description": "Filter items updated after one day ago",
+                "value": get_example_datetimes()[0]
+            },
+            "one_week_ago": {
+                "summary": "One week ago",
+                "description": "Filter items updated after one week ago",
+                "value": get_example_datetimes()[1]
+            }
+        }
+    )
 ):
     if offset is not None:
         current_offset = offset
@@ -481,6 +619,9 @@ def read_incidents(
         current_offset = (page - 1) * limit if page else 0
 
     query = db.query(IncidentModel)
+
+    if updated_after:
+        query = query.filter(IncidentModel.updated_at > updated_after)
 
     # Apply sorting
     if sort:
