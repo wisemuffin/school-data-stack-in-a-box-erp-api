@@ -12,6 +12,8 @@ class GeographyCreate(GeographyBase):
 
 class Geography(GeographyBase):
     id: int
+    created_at: datetime
+    updated_at: datetime
 
     class Config:
         from_attributes = True
@@ -25,6 +27,8 @@ class SchoolCreate(SchoolBase):
 
 class School(SchoolBase):
     id: int
+    created_at: datetime
+    updated_at: datetime
 
     class Config:
         from_attributes = True
@@ -38,6 +42,8 @@ class StudentCreate(StudentBase):
 
 class Student(StudentBase):
     id: int
+    created_at: datetime
+    updated_at: datetime
 
     class Config:
         from_attributes = True
@@ -50,6 +56,8 @@ class ScholasticYearCreate(ScholasticYearBase):
 
 class ScholasticYear(ScholasticYearBase):
     id: int
+    created_at: datetime
+    updated_at: datetime
 
     class Config:
         from_attributes = True
@@ -63,6 +71,8 @@ class ClassCreate(ClassBase):
 
 class Class(ClassBase):
     id: int
+    created_at: datetime
+    updated_at: datetime
 
     class Config:
         from_attributes = True
@@ -78,6 +88,8 @@ class AttendanceCreate(AttendanceBase):
 
 class Attendance(AttendanceBase):
     id: int
+    created_at: datetime
+    updated_at: datetime
 
     class Config:
         from_attributes = True
@@ -92,6 +104,8 @@ class EnrolmentCreate(EnrolmentBase):
 
 class Enrolment(EnrolmentBase):
     id: int
+    created_at: datetime
+    updated_at: datetime
 
     class Config:
         from_attributes = True
@@ -106,6 +120,8 @@ class IncidentCreate(IncidentBase):
 
 class Incident(IncidentBase):
     id: int
+    created_at: datetime
+    updated_at: datetime
 
     class Config:
         from_attributes = True
@@ -119,6 +135,8 @@ class ClassEnrolmentCreate(ClassEnrolmentBase):
 
 class ClassEnrolment(ClassEnrolmentBase):
     id: int
+    created_at: datetime
+    updated_at: datetime
 
     class Config:
         from_attributes = True

@@ -10,6 +10,8 @@ from data_generation import populate_data  # Import the data generation function
 
 # Create a SQLite database
 engine = create_engine('sqlite:///mock_school.db')
+# Drop all tables and recreate them
+Base.metadata.drop_all(engine)
 Base.metadata.create_all(engine)
 SessionLocal = sessionmaker(bind=engine)
 

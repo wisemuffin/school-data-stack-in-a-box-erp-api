@@ -1,30 +1,25 @@
 from sqlalchemy.orm import Session
 from models import Geography as GeographyModel, School as SchoolModel, Student as StudentModel, ScholasticYear as ScholasticYearModel, Class as ClassModel, Attendance as AttendanceModel, Enrolment as EnrolmentModel, Incident as IncidentModel, ClassEnrolment as ClassEnrolmentModel
 from faker import Faker
-from datetime import date
+from datetime import date, datetime, timezone, timedelta
 import random
+
+def get_random_past_datetime():
+    """Helper function to generate random past datetime"""
+    days_ago = random.randint(1, 365)
+    return datetime.now(timezone.utc) - timedelta(days=days_ago)
 
 def populate_data(db: Session):
     faker = Faker()
+    now = datetime.now(timezone.utc)
 
-    # Clear existing data
-    db.query(GeographyModel).delete()
-    db.query(SchoolModel).delete()
-    db.query(StudentModel).delete()
-    db.query(ScholasticYearModel).delete()
-    db.query(ClassModel).delete()
-    db.query(EnrolmentModel).delete()
-    db.query(ClassEnrolmentModel).delete()
-    db.query(AttendanceModel).delete()
-    db.query(IncidentModel).delete()
-
-    # Add Geography Data
+    # Add Geography Data with random past created_at dates
     geographies = [
-        {"city": "King's Landing", "region": "Crownlands"},
-        {"city": "Winterfell", "region": "The North"},
-        {"city": "Highgarden", "region": "The Reach"},
-        {"city": "Sunspear", "region": "Dorne"},
-        {"city": "Pyke", "region": "Iron Islands"},
+        {"city": "King's Landing", "region": "Crownlands", "created_at": get_random_past_datetime()},
+        {"city": "Winterfell", "region": "The North", "created_at": get_random_past_datetime()},
+        {"city": "Highgarden", "region": "The Reach", "created_at": get_random_past_datetime()},
+        {"city": "Sunspear", "region": "Dorne", "created_at": get_random_past_datetime()},
+        {"city": "Pyke", "region": "Iron Islands", "created_at": get_random_past_datetime()},
     ]
 
     geo_objects = [GeographyModel(**geo) for geo in geographies]
