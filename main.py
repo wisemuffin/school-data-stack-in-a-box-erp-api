@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends, HTTPException, Query
+from fastapi import FastAPI, Depends, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from models import Base, Geography as GeographyModel, School as SchoolModel, Student as StudentModel, ScholasticYear as ScholasticYearModel, Class as ClassModel, Attendance as AttendanceModel, Enrolment as EnrolmentModel, Incident as IncidentModel, ClassEnrolment as ClassEnrolmentModel
@@ -50,6 +50,7 @@ def get_example_datetimes():
 
 @app.get("/geographies/", response_model=PaginatedResponse[Geography])
 def read_geographies(
+    request: Request,
     db: Session = Depends(get_db),
     page: Optional[int] = Query(None, description="Page number (only use one of page or offset)"),
     limit: int = Query(10, description="Number of geographies to retrieve"),
@@ -95,7 +96,7 @@ def read_geographies(
     total = query.count()
 
     next_offset = current_offset + limit if current_offset + limit < total else None
-    next_url = f"/geographies/?limit={limit}&offset={next_offset}" if next_offset else None
+    next_url = f"{request.base_url}geographies/?limit={limit}&offset={next_offset}" if next_offset else None
     
     return PaginatedResponse[Geography](items=geographies, total=total, next=next_url)
 
@@ -140,6 +141,7 @@ def update_geography(geography_id: int, geography: GeographyCreate, db: Session 
 
 @app.get("/schools/", response_model=PaginatedResponse[School])
 def read_schools(
+    request: Request,
     db: Session = Depends(get_db),
     page: Optional[int] = Query(None, description="Page number (only use one of page or offset)"),
     limit: int = Query(10, description="Number of schools to retrieve"),
@@ -185,7 +187,7 @@ def read_schools(
     total = db.query(SchoolModel).count()
 
     next_offset = current_offset + limit if current_offset + limit < total else None
-    next_url = f"/schools/?limit={limit}&offset={next_offset}" if next_offset else None
+    next_url = f"{request.base_url}schools/?limit={limit}&offset={next_offset}" if next_offset else None
     
     return PaginatedResponse[School](items=schools, total=total, next=next_url)
 
@@ -230,6 +232,7 @@ def update_school(school_id: int, school: SchoolCreate, db: Session = Depends(ge
 
 @app.get("/students/", response_model=PaginatedResponse[Student])
 def read_students(
+    request: Request,
     db: Session = Depends(get_db),
     page: Optional[int] = Query(None, description="Page number (only use one of page or offset)"),
     limit: int = Query(10, description="Number of students to retrieve"),
@@ -275,7 +278,7 @@ def read_students(
     total = db.query(StudentModel).count()
 
     next_offset = current_offset + limit if current_offset + limit < total else None
-    next_url = f"/students/?limit={limit}&offset={next_offset}" if next_offset else None
+    next_url = f"{request.base_url}students/?limit={limit}&offset={next_offset}" if next_offset else None
     
     return PaginatedResponse[Student](items=students, total=total, next=next_url)
 
@@ -320,6 +323,7 @@ def update_student(student_id: int, student: StudentCreate, db: Session = Depend
 
 @app.get("/classes/", response_model=PaginatedResponse[Class])
 def read_classes(
+    request: Request,
     db: Session = Depends(get_db),
     page: Optional[int] = Query(None, description="Page number (only use one of page or offset)"),
     limit: int = Query(10, description="Number of classes to retrieve"),
@@ -365,7 +369,7 @@ def read_classes(
     total = db.query(ClassModel).count()
 
     next_offset = current_offset + limit if current_offset + limit < total else None
-    next_url = f"/classes/?limit={limit}&offset={next_offset}" if next_offset else None
+    next_url = f"{request.base_url}classes/?limit={limit}&offset={next_offset}" if next_offset else None
     
     return PaginatedResponse[Class](items=classes, total=total, next=next_url)
 
@@ -410,6 +414,7 @@ def update_class(class_id: int, class_: ClassCreate, db: Session = Depends(get_d
 
 @app.get("/attendances/", response_model=PaginatedResponse[Attendance])
 def read_attendances(
+    request: Request,
     db: Session = Depends(get_db),
     page: Optional[int] = Query(None, description="Page number (only use one of page or offset)"),
     limit: int = Query(10, description="Number of attendances to retrieve"),
@@ -455,7 +460,7 @@ def read_attendances(
     total = db.query(AttendanceModel).count()
 
     next_offset = current_offset + limit if current_offset + limit < total else None
-    next_url = f"/attendances/?limit={limit}&offset={next_offset}" if next_offset else None
+    next_url = f"{request.base_url}attendances/?limit={limit}&offset={next_offset}" if next_offset else None
     
     return PaginatedResponse[Attendance](items=attendances, total=total, next=next_url)
 
@@ -500,6 +505,7 @@ def update_attendance(attendance_id: int, attendance: AttendanceCreate, db: Sess
 
 @app.get("/enrolments/", response_model=PaginatedResponse[Enrolment])
 def read_enrolments(
+    request: Request,
     db: Session = Depends(get_db),
     page: Optional[int] = Query(None, description="Page number (only use one of page or offset)"),
     limit: int = Query(10, description="Number of enrolments to retrieve"),
@@ -545,7 +551,7 @@ def read_enrolments(
     total = db.query(EnrolmentModel).count()
 
     next_offset = current_offset + limit if current_offset + limit < total else None
-    next_url = f"/enrolments/?limit={limit}&offset={next_offset}" if next_offset else None
+    next_url = f"{request.base_url}enrolments/?limit={limit}&offset={next_offset}" if next_offset else None
     
     return PaginatedResponse[Enrolment](items=enrolments, total=total, next=next_url)
 
@@ -590,6 +596,7 @@ def update_enrolment(enrolment_id: int, enrolment: EnrolmentCreate, db: Session 
 
 @app.get("/incidents/", response_model=PaginatedResponse[Incident])
 def read_incidents(
+    request: Request,
     db: Session = Depends(get_db),
     page: Optional[int] = Query(None, description="Page number (only use one of page or offset)"),
     limit: int = Query(10, description="Number of incidents to retrieve"),
@@ -635,7 +642,7 @@ def read_incidents(
     total = db.query(IncidentModel).count()
 
     next_offset = current_offset + limit if current_offset + limit < total else None
-    next_url = f"/incidents/?limit={limit}&offset={next_offset}" if next_offset else None
+    next_url = f"{request.base_url}incidents/?limit={limit}&offset={next_offset}" if next_offset else None
     
     return PaginatedResponse[Incident](items=incidents, total=total, next=next_url)
 
